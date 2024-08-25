@@ -1,0 +1,34 @@
+import pandas as pd
+from sklearn.cluster import KMeans
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Loading data from a CSV file
+df = pd.read_csv('/content/clustered_job_postings (1).csv')
+# Removing the 'job_title' column for clustering
+X = df.drop('job_title', axis=1)
+# Performing clustering using the k-means method
+kmeans = KMeans(n_clusters=4, random_state=20) # You can change the number of clusters
+kmeans.fit(X)
+# Adding clustering results to the original DataFrame
+df['cluster'] = kmeans.labels_
+# Using t-SNE to reduce data dimensionality
+tsne = TSNE(n_components=2, perplexity=30, random_state=20)
+X_tsne = tsne.fit_transform(X)
+# Adding t-SNE components to the DataFrame
+df['tsne-2d-one'] = X_tsne[:, 0]
+df['tsne-2d-two'] = X_tsne[:, 1]
+# Visualisation of results
+plt.figure(figsize=(16, 10))
+sns.scatterplot(
+x='tsne-2d-one', y='tsne-2d-two',
+hue='cluster',
+palette=sns.colour_palette('hsv', len(df['cluster'].unique())),
+data=df,
+legend="full",
+alpha=0.8
+)
+plt.title('Clustering Data Engineers by Skills using t-SNE')
+plt.show()
+# Save the results to a new CSV file
+df.to_csv('clustered_data.csv', index=False)
